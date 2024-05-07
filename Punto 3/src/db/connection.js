@@ -7,7 +7,6 @@ export const getSQLServerConnection = async () => {
     try {
         const pool = new ConnectionPool(dbserver);
         await pool.connect();
-        console.log('Conectado correctamente a SQL Server');
         return pool;
     } catch (error) {
         console.error('Error al conectar a SQL Server:', error);
@@ -24,7 +23,6 @@ export const getPostgresqlConnection = async function connectToPostgreSQL() {
             port: dbpg.port,
             database: dbpg.database
         });
-        console.log('Conectado correctamente a PostgreSQL');
         return clientpg;
     } catch (error) {
         console.error('Error al conectar a PostgreSQL:', error);
