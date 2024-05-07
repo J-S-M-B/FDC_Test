@@ -10,9 +10,7 @@ export const getEmpleados = async (req, res) => {
     if (resultsqlserver.recordset.length === 0 && resultpostgres.rowCount === 0) {
         return res.status(404).json({ message: "No se encontraron empleados" });
     }
-    return res.status(200).json({
-        sqlserver: resultsqlserver.recordset,
-        postgresql: resultpostgres.rows});
+    return res.status(200).json(resultsqlserver.recordset)
 }
 
 export const getEmpleado = async (req, res) => {
@@ -31,10 +29,7 @@ export const getEmpleado = async (req, res) => {
     if ((resultsqlserver.rowsAffected[0] && resultpostgres.rowCount[0]) === 0) {
         return res.status(404).json({ message: "Empleado no encontrado" });
     }
-    return res.status(200).json({
-        sqlserver: resultsqlserver.recordset[0],
-        postgresql: resultpostgres.rows[0]
-    });
+    return res.status(200).json(resultsqlserver.recordset);
 }
 
 export const createEmpleado = async (req, res) => {
