@@ -1,49 +1,19 @@
+import pkg from 'mssql';
 import pg from 'pg';
-
 import { dbpg, dbserver } from '../config.js';
+const { ConnectionPool } = pkg;
 
-import { Connection, Request } from 'tedious';
-
-export const getSQLServerConnection = async function connectToSqlServer() {
-
+export const getSQLServerConnection = async () => {
     try {
-        const clientserver= await new Connection(dbserver);        
-        clientserver.connect();        
-        clientserver.on('connect', (err) => {
-            if (err) {
-                console.error('Error al conectar a SQL Server:', err);
-                throw err;
-            } else {
-                console.log('Conectado correctamente a SQL Server');
-                
-                // Crear y ejecutar la consulta SELECT
-                const request = new Request("SELECT e.Id as EmpleadoId, e.Nombre as NombreEmpleado, e.DepartamentoId, d.Nombre as NombreDepartamento FROM Empleado e INNER JOIN Departamento d ON e.DepartamentoId = d.Id", (err, rowCount, rows) => {
-                    if (err) {
-                        console.error('Error al ejecutar consulta SELECT:', err);
-                        throw err;
-                    } else {
-                        console.log(rowCount + ' filas devueltas'); 
-
-                        rows.forEach(row => {
-                            const empleadoId = row[0].value;
-                            const nombreEmpleado = row[1].value;
-                            const departamentoId = row[2].value;
-                            const nombreDepartamento = row[3].value;
-                            console.log(`Empleado: ${empleadoId}, ${nombreEmpleado}, DepartamentoId: ${departamentoId}, NombreDepartamento: ${nombreDepartamento}`);
-                        });
-                    }
-                });                
-                clientserver.execSql(request);
-            }
-        });
-
-        return clientserver;
+        const pool = new ConnectionPool(dbserver);
+        await pool.connect();
+        console.log('Conectado correctamente a SQL Server');
+        return pool;
     } catch (error) {
         console.error('Error al conectar a SQL Server:', error);
         throw error;
     }
 }
-
 
 export const getPostgresqlConnection = async function connectToPostgreSQL() {
     try {

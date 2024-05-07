@@ -1,0 +1,50 @@
+POSTGRESQL:
+
+CREATE TABLE Departamentos (
+    Id SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE Empleados (
+    Id SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    DepartamentoId INT,
+    FOREIGN KEY (DepartamentoId) REFERENCES Departamentos(Id)
+);
+
+
+CREATE TABLE Proyectos (
+    Id SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    ResponsableId INT,
+    FOREIGN KEY (ResponsableId) REFERENCES Empleados(Id)
+);
+
+
+
+
+
+SQL SERVER:
+
+
+CREATE TABLE Departamentos (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE Empleados (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    DepartamentoId INT,
+    FOREIGN KEY (DepartamentoId) REFERENCES Departamentos(Id)
+);
+
+
+CREATE TABLE Proyectos (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    ResponsableId INT,
+    FOREIGN KEY (ResponsableId) REFERENCES Empleados(Id)
+);

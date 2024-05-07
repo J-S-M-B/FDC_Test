@@ -4,20 +4,16 @@ dotenv.config();
 
 export const dbserver = {
     server: process.env.DB_HOST,
-    authentication: {
-        type: 'default',
-        options: {
-            userName: process.env.DB_USER,
-            password: process.env.DB_PASSWORD
-        }
-    },
+    user: process.env.DB_USER, // Cambia userName a user
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT),
+    database: process.env.DB_DATABASE,
     options: {
-        port: parseInt(process.env.DB_PORT),
-        database: process.env.DB_DATABASE,
         trustServerCertificate: true,
-        rowCollectionOnRequestCompletion:true
+        rowCollectionOnRequestCompletion: true
     }
-}
+};
+
 
 export const dbpg = {
     user: process.env.DB_USER2,
