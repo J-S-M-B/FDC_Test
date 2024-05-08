@@ -1,96 +1,142 @@
 import axios from "axios";
 import React, { useEffect, useState } from 'react';
-//import Swal from "sweetalert2";
-//import withReactContent from "sweetalert2-react-content";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import { mostrar_alerta } from "../functions";
 
 const MostrarEmpleados = () => {
 
   const headers = {
-    "Accept": "application/json, text/plain, /", "Content-Type": "multipart/form-data"
+    "Accept": "application/json, text/plain, /",
+    "Content-Type": "multipart/form-data"
   };
-  const url1 = 'http://localhost:4000/empleados';
+  const url = 'http://localhost:4000/empleados';
   const [empleados, setEmpleados] = useState([]);
   const [id, setId] = useState('');
   const [nombre, setNombre] = useState('');
   const [departamentoId, setDepartamentoId] = useState('');
-  const [nombreDepartamento, setNombreDepartamento] = useState('');
-  const [responsableId, setResponsableId] = useState('');
   const [nombreProyecto, setNombreProyecto] = useState('');
-  const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState('');
-
+  const [modal, setModal] = useState('');
+  
   useEffect(() => {
     getEmpleados();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  
   const getEmpleados = async () => {
-    const res = await axios.get(url1, { headers });
-    setEmpleados(res.data);
+    try {
+      const res = await axios.get(url, { headers });
+      setEmpleados(res.data);
+    } catch (error) {
+      console.error('Error al obtener los empleados:', error);
+    }
+  }
+  
+  const createEmpleado = async ( data ) => {   
+
+    try {
+      const res = await axios.post(  
+        url, 
+        data, 
+        headers);
+
+      mostrar_alerta('Registro creado', 'info')  
+      getEmpleados();
+      return res.data;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      mostrar_alerta('Error en la solicitud', 'error');
+      throw error; 
+    }
   }
 
-  const openModal = (op, id, nombre, departamentoId, responsableId) => {
+  const updateEmpleado = async ( id, data ) => {
+    var url2 = `http://localhost:4000/empleados/${id}`;
+    try {
+      const res = await axios.put(  
+        url2, 
+        data, 
+        headers);
+
+      mostrar_alerta('Registro actualizado', 'info')
+      getEmpleados();
+      return res.data;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      mostrar_alerta('Error en la solicitud', 'error');
+      throw error; 
+    }
+  }
+  
+  const deleteEmpleado = async ( id ) => {
+    const MySwal = withReactContent(Swal);
+    MySwal.fire({
+      title:'¿Seguro que desea eliminar al empleado?',
+      icon: 'question', text: 'El cambio es irreversible',
+      showCancelButton: true, confirmButtonText:'Confirmar', cancelButtonText:'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed){
+        var url2 = `http://localhost:4000/empleados/${id}`;
+        try {
+          const res = await axios.delete(  
+        url2, 
+        id,
+        headers);
+        mostrar_alerta('Registro eliminado', 'info')
+        getEmpleados();
+        return res.data;
+      } catch (error) {
+        console.error('Error en la solicitud:', error);
+        mostrar_alerta('Error en la solicitud', 'error');
+        throw error; 
+      }
+      
+    } else {
+        mostrar_alerta('El registro no fue eliminado', 'info')
+    }
+    });
+  }
+  
+  const handleEmpleadoAction = async (op, ID) => {
+    var data = { Nombre: nombre, DepartamentoId: departamentoId, NombreProyecto: nombreProyecto };
+    
+    if (op === 1) {
+      await createEmpleado(data);
+    } if (op === 2) {
+      await updateEmpleado(id, data);
+    } else if (op === 3) {
+      await deleteEmpleado(ID)
+    }
+
+      document.getElementById('btnCerrar').click();
+      clearForm();
+  }
+
+  const clearForm = () => {
     setId('');
     setNombre('');
     setDepartamentoId('');
-    setNombreDepartamento('');
-    setResponsableId('');
     setNombreProyecto('');
-    setOperation(op);
+  }
+  
+  const openModal = (op, id, nombre, departamentoId, nombreProyecto) => {
     if (op === 1) {
       setTitle('Registrar empleado');
-    }
-    else if (op === 2) {
+      setModal(1);
+      
+    } else if (op === 2) {
       setTitle('Editar empleado');
       setId(id);
       setNombre(nombre);
       setDepartamentoId(departamentoId);
-      setResponsableId(responsableId);
+      setNombreProyecto(nombreProyecto);
+      setModal(2);
     }
     window.setTimeout(function () {
       document.getElementById('nombre').focus();
     }, 500);
   }
-
-  const validar = () => {
-    var parametros;
-    var metodo;
-    if (nombre.trim() === '') {
-      mostrar_alerta('Digite nombre del empleado', 'warning');
-    }
-    else if (departamentoId.trim() === '') {
-      mostrar_alerta('Digite id del departamento', 'warning');
-    }
-    else if (responsableId.trim() === '') {
-      mostrar_alerta('Digite id del proyecto', 'warning');
-    }
-    else {
-      if (operation === 1) {
-        parametros = { nombre: nombre.trim(), departamentoId: departamentoId.trim(), responsableId: responsableId.trim() };
-        metodo = 'POST';
-      }
-      else {
-        parametros = { id: id, nombre: nombre.trim(), departamentoId: departamentoId.trim(), responsableId: responsableId.trim() };
-        metodo = 'PUT';
-      }
-      enviar(metodo, parametros);
-    }
-  }
-  const enviar = async (metodo, parametros) => {
-    await axios({ method: metodo, url1: url1, data: parametros }).then(function (respuesta) {
-      var tipo = respuesta.data[0];
-      var msj = respuesta.data[1];
-      mostrar_alerta(msj, tipo);
-      if (tipo === 'success') {
-        document.getElementById('btnCerrar').click();
-        getEmpleados()
-      }
-    })
-      .catch(function (error) {
-        mostrar_alerta('Error en la solicitud', 'error');
-      });
-  }
-
 
   return (
     <div className='App'>
@@ -99,7 +145,7 @@ const MostrarEmpleados = () => {
           <div className='col-md-4 offset-md-4'>
             <div className='d-grid mx-auto'>
               <button onClick={() => openModal(1)} className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalEmpleados'>
-                <i class='bi bi-plus-circle'></i> Añadir
+                <i className='bi bi-plus-circle'></i> Añadir
               </button>
             </div>
           </div>
@@ -117,6 +163,7 @@ const MostrarEmpleados = () => {
                     <th>Nombre del departamento</th>
                     <th>Responsable Id</th>
                     <th>Nombre del Proyecto</th>
+                    <th></th> 
                   </tr>
                 </thead>
                 <tbody>
@@ -129,13 +176,13 @@ const MostrarEmpleados = () => {
                       <td>{empleado.ResponsableId}</td>
                       <td>{empleado.NombreProyecto}</td>
                       <td>
-                        <button onClick={() => openModal(2, empleado.Id, empleado.Nombre, empleado.DepartamentoId, empleado.ResponsableId)}
+                        <button onClick={() => openModal(2, empleado.Id, empleado.Nombre, empleado.DepartamentoId, empleado.NombreProyecto) }
                           className="btn btn-warning" data-bs-toggle='modal' data-bs-target="#modalEmpleados">
-                          <i className="bi bi-pen"></i>
+                          <i className="bi bi-pen"></i> Editar
                         </button>
                         &nbsp;
-                        <button className="btn btn-danger">
-                          <i className="bi bi-trash"></i>
+                        <button onClick={() => handleEmpleadoAction(3, empleado.Id)} className="btn btn-danger">
+                          <i className="bi bi-trash"></i> Eliminar
                         </button>
                       </td>
                     </tr>
@@ -146,7 +193,6 @@ const MostrarEmpleados = () => {
           </div>
         </div>
       </div>
-
       <div id='modalEmpleados' className='modal fade' aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
@@ -169,13 +215,13 @@ const MostrarEmpleados = () => {
                 ></input>
               </div>
               <div className="input-group mb-3">
-                <span className="input-group-text"><i className="bi bi-houses"></i></span>
-                <input type="text" id="responsableid" className="form-control" placeholder="Responsableid" value={responsableId}
-                  onChange={(e) => setResponsableId(e.target.value)}
+                <span className="input-group-text"><i className="bi bi-card-text"></i></span>
+                <input type="text" id="nombreProyecto" className="form-control" placeholder="Nombre del Proyecto" value={nombreProyecto}
+                  onChange={(e) => setNombreProyecto(e.target.value)}
                 ></input>
               </div>
               <div className="d-grid col-6 mx-auto">
-                <button onClick={() => validar()} className="btn btn-success">
+                <button onClick={() => handleEmpleadoAction(modal)} className="btn btn-success">
                   <i className="bi bi-floppy"></i> Guardar
                 </button>
               </div>
@@ -188,6 +234,5 @@ const MostrarEmpleados = () => {
       </div>
     </div>
   )
-}
-
-export default MostrarEmpleados
+}    
+export default MostrarEmpleados;

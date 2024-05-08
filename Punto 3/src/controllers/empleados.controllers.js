@@ -58,7 +58,7 @@ export const createEmpleado = async (req, res) => {
     try {
         const poolsqlserver = await getSQLServerConnection();
         const poolpostgres = await getPostgresqlConnection();
-
+        
         // Crear empleado en SQL Server
         const resultsqlserver = await poolsqlserver.request()
             .input("Nombre", sql.VarChar, Nombre)
